@@ -1,6 +1,6 @@
 # **ProtGPT2**
 
-ProtGPT2 ([paper](https://www.biorxiv.org/content/10.1101/2022.03.09.483666v1) is a language model that speaks the protein language and can be used for de novo protein design and engineering.
+ProtGPT2 ([paper](https://www.biorxiv.org/content/10.1101/2022.03.09.483666v1)) is a language model that speaks the protein language and can be used for de novo protein design and engineering.
 ProtGPT2 is based on the GPT2 Transformer architecture and contains 36 layers with a model dimensionality of 1280, totalling 738 million parameters. 
 
 
