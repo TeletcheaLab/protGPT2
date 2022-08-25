@@ -55,7 +55,7 @@ The HuggingFace script run_clm.py can be found here: https://github.com/huggingf
 ### **How to select the best sequences**
 We've observed that perplexity values correlate with AlphaFold2's plddt. This plot shows perplexity vs. pldtt values for each of the 10,000 sequences in the ProtGPT2-generated dataset:
 <div align="center">
-<img src="https://huggingface.co/nferruz/ProtGPT2/edit/main/ppl-plddt.png" width="45%" />
+<img src="https://huggingface.co/nferruz/ProtGPT2/blob/main/ppl-plddt.png" width="45%" />
 </div>
 
 
