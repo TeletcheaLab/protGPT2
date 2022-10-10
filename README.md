@@ -24,7 +24,8 @@ In the example below, ProtGPT2 generates sequences that follow the amino acid 'M
 ```
 >>> from transformers import pipeline
 >>> protgpt2 = pipeline('text-generation', model="nferruz/ProtGPT2")
->>> sequences = protgpt2("M", max_length=100, do_sample=True, top_k=950, repetition_penalty=1.2, num_return_sequences=10, eos_token_id=0)
+# length is expressed in tokens, where each token has an average length of 4 amino acids.
+>>> sequences = protgpt2("<|endoftext|>", max_length=100, do_sample=True, top_k=950, repetition_penalty=1.2, num_return_sequences=10, eos_token_id=0)
 >>> for seq in sequences:
         print(seq):
  {'generated_text': 'MINDLLDISRIISGKMTLDRAEVNLTAIARQVVEEQRQAAEAKSIQLLCSTPDTNHYVFG\nDFDRLKQTLWNLLSNAVKFTPSGGTVELELGYNAEGMEVYVKDSGIGIDPAFLPYVFDRF\nRQSDAADSRNYGGLGLGLAIVKHLLDLHEGNVSAQSEGFGKGATFTVLLPLKPLKRELAA\nVNRHTAVQQSAPLNDNLAGMKILIVEDRPDTNEMVSYILEEAGAIVETAESGAAALTSLK\nSYSPDLVLSDIGMPMMDGYEMIEYIREWKTTKGG'}
@@ -54,15 +55,27 @@ The HuggingFace script run_clm.py can be found here: https://github.com/huggingf
 
 ### **How to select the best sequences**
 We've observed that perplexity values correlate with AlphaFold2's plddt. 
-We recommend to compute perplexity for each sequence with the HuggingFace evaluate method `perplexity`:
+We recommend to compute perplexity for each sequence as follows:
 
 ```
-from evaluate import load
-perplexity = load("perplexity", module_type="metric")
-results = perplexity.compute(predictions=predictions, model_id='nferruz/ProtGPT2')
+def calculatePerplexity(sequence, model, tokenizer):
+    with torch.no_grad():
+        outputs = model(sequence, labels=input_ids)
+   loss, logits = outputs[:2]
+    return math.exp(loss)
+    
+# Generate sequences by loading model and tokenizer (previously downloaded)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+tokenizer = AutoTokenizer.from_pretrained('/path/to/tokenizer') # replace with the actual path
+model = GPT2LMHeadModel.from_pretrained('/path/to/output').to(device) 
+output = model.generate("<|endoftext|>", max_length=400, do_sample=True, top_k=950, repetition_penalty=1.2, num_return_sequences=10, eos_token_id=0)
+
+# Take (for example) the first sequence
+sequence = output[0]
+ppl = calculatePerplexity(sequence, model, tokenizer)
 ```
 
-Where `predictions` is a list containing the generated sequences.
+Where `ppl` is a value with the perplexity for that sequence.
 We do not yet have a threshold as of what perplexity value gives a 'good' or 'bad' sequence, but given the fast inference times, the best is to sample many sequences, order them by perplexity, and select those with the lower values (the lower the better).
 
 
