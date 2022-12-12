@@ -55,29 +55,34 @@ The HuggingFace script run_clm.py can be found here: https://github.com/huggingf
 
 ### **How to select the best sequences**
 We've observed that perplexity values correlate with AlphaFold2's plddt. 
-We recommend to compute perplexity for each sequence as follows:
+We recommend computing perplexity for each sequence as follows:
 
 ```
-def calculatePerplexity(sequence, model, tokenizer):
-    with torch.no_grad():
-        outputs = model(sequence, labels=input_ids)
-   loss, logits = outputs[:2]
-    return math.exp(loss)
-    
-# Generate sequences by loading model and tokenizer (previously downloaded)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-tokenizer = AutoTokenizer.from_pretrained('/path/to/tokenizer') # replace with the actual path
-model = GPT2LMHeadModel.from_pretrained('/path/to/output').to(device) 
-output = model.generate("<|endoftext|>", max_length=400, do_sample=True, top_k=950, repetition_penalty=1.2, num_return_sequences=10, eos_token_id=0)
+sequence='MGEAMGLTQPAVSRAVARLEERVGIRIFNRTARAITLTDEGRRFYEAVAPLLAGIEMHGYR\nVNVEGVAQLLELYARDILAEGRLVQLLPEWAD'
 
-# Take (for example) the first sequence
-sequence = output[0]
+#Convert the sequence to a string like this
+#(note we have to introduce new line characters every 60 amino acids,
+#following the FASTA file format).
+
+sequence = "<|endoftext|>MGEAMGLTQPAVSRAVARLEERVGIRIFNRTARAITLTDEGRRFYEAVAPLLAGIEMHGY\nRVNVEGVAQLLELYARDILAEGRLVQLLPEWAD<|endoftext|>"
+
+# ppl function
+def calculatePerplexity(sequence, model, tokenizer):
+    input_ids = torch.tensor(tokenizer.encode(sentence)).unsqueeze(0) 
+    input_ids = input_ids.to(device)
+    with torch.no_grad():
+        outputs = model(input_ids, labels=input_ids)
+    loss, logits = outputs[:2]
+    return math.exp(loss)
+
+#And hence: 
 ppl = calculatePerplexity(sequence, model, tokenizer)
+
 ```
 
 Where `ppl` is a value with the perplexity for that sequence.
-We do not yet have a threshold as of what perplexity value gives a 'good' or 'bad' sequence, but given the fast inference times, the best is to sample many sequences, order them by perplexity, and select those with the lower values (the lower the better).
+We do not yet have a threshold as to what perplexity value gives a 'good' or 'bad' sequence, but given the fast inference times, the best is to sample many sequences, order them by perplexity, and select those with the lower values (the lower the better).
 
 
 ### **Training specs**
-The model was trained on 128 NVIDIA A100 GPUs for 50 epochs, using a block size of 512, and a total batch size of 1024 (65,536 tokens per batch). The optimizer used was Adam (beta1 = 0.9, beta2 = 0.999) with a learning rate of 1e-3.
+The model was trained on 128 NVIDIA A100 GPUs for 50 epochs, using a block size of 512 and a total batch size of 1024 (65,536 tokens per batch). The optimizer used was Adam (beta1 = 0.9, beta2 = 0.999) with a learning rate of 1e-3.
