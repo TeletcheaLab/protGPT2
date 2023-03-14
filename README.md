@@ -1,3 +1,10 @@
+---
+license: apache-2.0
+pipeline_tag: text-generation
+widget:
+- text: "<|endoftext|>"
+---
+
 # **ProtGPT2**
 
 ProtGPT2 ([peer-reviewed paper](https://www.nature.com/articles/s41467-022-32007-7)) is a language model that speaks the protein language and can be used for de novo protein design and engineering. ProtGPT2 generated sequences conserve natural proteins' critical features (amino acid propensities, secondary structural content, and globularity) while exploring unseen regions of the protein space.
