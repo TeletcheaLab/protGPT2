@@ -3,6 +3,10 @@ license: apache-2.0
 pipeline_tag: text-generation
 widget:
 - text: "<|endoftext|>"
+inference:
+  parameters:
+    top_k: 950
+    repetition_penalty: 1.2
 ---
 
 # **ProtGPT2**
